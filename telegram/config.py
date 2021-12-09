@@ -52,7 +52,7 @@ ANSWER_TEXT = {
     'timezone': lambda timezone_number: f"Excellent, you chose: UTC {timezone_number}",
     'live_matches': "Live matches",
     'dates_text_by_match_type': lambda match_type: "Dates for " + {'R': 'Results', 'U': 'Upcoming matches'}.get(match_type, 'Matches'),
-    'correct_date': 'Please enter the correct date\nExamples: \n 🔹 02.06.2002 - full date\n 🔹 2.6 - day and month (current month)\n 🔹 2 - only day (current month and year)',
+    'correct_date': 'Please enter the correct date\nExamples: \n 🔹 02.06.2002 - full date\n 🔹 2.6 - day and month (current year)\n 🔹 2 - only day (current month and year)',
     'matches_by_type': lambda match_type: {'U': 'Upcoming matches', 'R': 'Results'}.get(match_type, 'Matches'),
     'no_matches_by_type': lambda match_type: {'U': 'Oops .. no matches planned for this day', 'R': 'There are no results for the selected day'}.get(match_type, 'No matches'),
     'match_info': "Match info",
