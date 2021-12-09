@@ -36,7 +36,7 @@ from data.parse import UpdateData
 from log.methods import CreateLog
 
 from functions import check_message_text, check_callback_split
-from functions import get_timezone_text_and_interval, get_timezone_text, get_correct_date
+from functions import get_timezone_text, get_correct_date
 
 # CONFIG
 from telegram.config import GOD_ID, ADMIN_IDS
@@ -251,7 +251,7 @@ async def error_location_selection(message: Message):
 @rate_limit()
 async def timezone(callback: CallbackQuery, state: FSMContext):
 
-    [timezone_text, user_timezone] = get_timezone_text_and_interval(callback.data)    
+    [timezone_text, user_timezone] = get_timezone_text(callback.data, interval=True)    
 
     # удаляем сообщение только в приватном чате
     if callback.message.chat.type == 'private':
@@ -334,6 +334,21 @@ async def dates(callback: CallbackQuery):
 
 
 # MATCHES ------------------------------------------------------------------------------------------------------------------------------
+
+@dp.message_handler(lambda message: check_message_text(message, ['today', 'tomorrow', 'results today', 'results_today']))
+@rate_limit()
+async def matches_or_results(message: Message):
+        
+    match_type = 'U' if check_message_text(message, ['today', 'tomorrow']) else 'R'
+    user_timezone = SELECT.user_timezone(message.chat.id)
+    date_ = (datetime.datetime.utcnow() + user_timezone).date()
+
+    if check_message_text(message, ['tomorrow']):
+        date_ += datetime.timedelta(days=1)
+
+    await matches_by_date(message, match_type=match_type, date_=date_, user_timezone=user_timezone)
+
+
 @dp.message_handler(Text(startswith=['matches', 'results'], ignore_case=True))
 @rate_limit()
 async def command_with_date(message: Message):
@@ -350,20 +365,6 @@ async def command_with_date(message: Message):
         return await message.answer(ANSWER_TEXT['correct_date'])
 
     return await matches_by_date(message, match_type=match_type, date_=date_, user_timezone=user_timezone)
-
-
-@dp.message_handler(lambda message: check_message_text(message, ['today', 'tomorrow', 'results today', 'results_today']))
-@rate_limit()
-async def matches_or_results(message: Message):
-        
-    match_type = 'U' if check_message_text(message, ['today', 'tomorrow']) else 'R'
-    user_timezone = SELECT.user_timezone(message.chat.id)
-    date_ = (datetime.datetime.utcnow() + user_timezone).date()
-
-    if check_message_text(message, ['tomorrow']):
-        date_ += datetime.timedelta(days=1)
-
-    await matches_by_date(message, match_type=match_type, date_=date_, user_timezone=user_timezone)
 
 
 @dp.callback_query_handler(lambda callback: check_callback_split(callback, ['m']))
@@ -571,7 +572,7 @@ async def settings_info(callback: CallbackQuery):
     text = settings_info_descriptions.get(info_parameter, "Error")
 
     await bot.answer_callback_query(callback_query_id=callback.id, text=text, show_alert=True)
-    await CreateLog(callback, 'settings_info', params=info_parameter)
+    CreateLog(callback, 'settings_info', params=info_parameter)
 
 
 @dp.callback_query_handler(lambda callback: 'settings' in callback.data)
@@ -592,7 +593,7 @@ async def settings_change(callback: CallbackQuery):
 
     
 
-    await CreateLog(callback, 'settings_change', params=variable_parameter)
+    CreateLog(callback, 'settings_change', params=variable_parameter)
 
 
 
@@ -602,7 +603,7 @@ async def settings_change(callback: CallbackQuery):
 @rate_limit()
 async def show_keyboard(message: Message):
     await message.answer(ANSWER_TEXT["keyboard"], reply_markup=REPLY().default())
-    await CreateLog(message, 'show_keyboard')
+    CreateLog(message, 'show_keyboard')
 
 
 
@@ -615,7 +616,7 @@ async def show_keyboard(message: Message):
 @rate_limit()
 async def button_not_clickable(callback: CallbackQuery):
     await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK["button_not_clickable"])
-    await CreateLog(callback, 'button_not_clickable')
+    CreateLog(callback, 'button_not_clickable')
     #await callback.message.delete()
 
 
