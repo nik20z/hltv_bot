@@ -39,7 +39,7 @@ def CreateLog_decorate(func):
 
 
 
-def CreateLog(message, command, request_type = 'TEXT', params = ''):
+def CreateLog(message, command: str, request_type = 'TEXT', params = ''):
     if isinstance(message, CallbackQuery):
         message = message.message
         request_type = 'CALLBACK'
@@ -49,9 +49,15 @@ def CreateLog(message, command, request_type = 'TEXT', params = ''):
     user_id = message.chat.id
     chat_type = message.chat.type
 
+    '''
     space_after_chat_type = ' '*(7-len(chat_type))
     space_after_request_type = ' '*(8 - len(request_type))
     space_after_command = ' '*(25 - len(command))
     space_after_params =  ' '*(17 - len(params))
 
     logger.info(f"[{chat_type.upper()}{space_after_chat_type}] [{request_type}{space_after_request_type}] | {command}{space_after_command}| {params}{space_after_params} | {user_id} |")
+    '''
+
+    log_array = [chat_type.upper(), request_type, command, params, user_id]
+    
+    logger.info(log_array)
