@@ -30,35 +30,38 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
 
 - /settings - settings menu
  
-  <img src="https://user-images.githubusercontent.com/62090150/145673843-06da82a0-685e-4442-a76f-a95b14741333.png" width="30%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673843-06da82a0-685e-4442-a76f-a95b14741333.png" width="40%"></p>
 
 - /today - today's matches
   
-  <img src="https://user-images.githubusercontent.com/62090150/145673886-90bbcbc3-665d-447a-a395-444657e6c027.png" width="30%"></p>
-  <img src="https://user-images.githubusercontent.com/62090150/145674029-041b89ba-fdc9-472e-bc4e-0ff6f803b319.png" width="30%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673886-90bbcbc3-665d-447a-a395-444657e6c027.png" width="40%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145674029-041b89ba-fdc9-472e-bc4e-0ff6f803b319.png" width="40%"></p>
 
 - /tomorrow - tomorrow's matches
 - /live - live broadcast
 - /results_today - today's results
   
-  <img src="https://user-images.githubusercontent.com/62090150/145674082-a13870d3-fc23-4186-b343-fa352191810b.png" width="30%"></p>
-  <img src="https://user-images.githubusercontent.com/62090150/145674112-8eb6e62f-0756-4aa1-a064-332f8d73d7f9.png" width="30%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145674082-a13870d3-fc23-4186-b343-fa352191810b.png" width="40%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145674112-8eb6e62f-0756-4aa1-a064-332f8d73d7f9.png" width="40%"></p>
 
   
 - /matches {date} - matches for a specific day
   
-  <img src="https://user-images.githubusercontent.com/62090150/145673959-a775d45f-9b4b-4048-94ea-c1593b39bdd4.png" width="30%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673959-a775d45f-9b4b-4048-94ea-c1593b39bdd4.png" width="40%"></p>
   
 - /results {date} - results for a specific day
 - /events - events info
 
-  <img src="https://user-images.githubusercontent.com/62090150/145673930-8c55d5d6-cd36-4871-8ad2-2225eb67495f.png" width="30%"></p>
-  <img src="https://user-images.githubusercontent.com/62090150/145673979-baf2dbec-90c7-4b4b-bce3-a84993496c11.png" width="30%"></p>
-  <img src="https://user-images.githubusercontent.com/62090150/145673994-c5f38799-2153-426b-96c5-eca64e2bb710.png" width="30%"></p>
-  <img src="https://user-images.githubusercontent.com/62090150/145674008-ff00f1e2-2ce9-43d5-aa15-4eac4f05cd55.png" width="30%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673930-8c55d5d6-cd36-4871-8ad2-2225eb67495f.png" width="40%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673979-baf2dbec-90c7-4b4b-bce3-a84993496c11.png" width="40%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145673994-c5f38799-2153-426b-96c5-eca64e2bb710.png" width="40%"></p>
+  <img src="https://user-images.githubusercontent.com/62090150/145674008-ff00f1e2-2ce9-43d5-aa15-4eac4f05cd55.png" width="40%"></p>
   
 - /news - latest news
  
-  <img src="https://user-images.githubusercontent.com/62090150/145674158-54da6b5e-8d76-46d5-a6d9-c2138288e16e.png" width="30%"></p>
- 
+  <img src="https://user-images.githubusercontent.com/62090150/145674158-54da6b5e-8d76-46d5-a6d9-c2138288e16e.png" width="40%"></p>
+  
 - /keyboard - show keyboard
+  
+  <img src="https://user-images.githubusercontent.com/62090150/145674198-bf71b088-e72f-4c79-95a2-ac78a51c77d9.png" width="40%"></p>
+
