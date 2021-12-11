@@ -10,7 +10,7 @@
 ## Description
 
 [Telegram Bot](https://t.me/hltv_analytics_bot "hltv_bot") is designed for convenient viewing of information about matches and events in the world of CS: GO
-Information is taken from this [site](hltv.org "hltv.org") 
+Information is taken from this [site](https://www.hltv.org "hltv.org") 
 
 
 ## Implementation features
