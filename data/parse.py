@@ -273,7 +273,7 @@ class Parse:
 
 
 	@time_of_function
-	def get_soup(self, type_link):
+	def get_soup(self, type_link: str):
 		url = MAIN_URL + PART_LINKS[type_link]
 		response = self.session.get(url, headers=HEADERS)
 		soup = BeautifulSoup(response.content, 'lxml')
@@ -305,7 +305,7 @@ class Parse:
 
 	
 	def events(self):
-		def get_soup_array(soup_obj, tag, class_):
+		def get_soup_array(soup_obj, tag: str, class_: str):
 			return soup_obj.find_all(tag, class_=class_)
 
 		soup_events = self.get_soup('events')
@@ -336,7 +336,7 @@ class Parse:
 		self.insert('news')
 
 	
-	def insert(self, type_):
+	def insert(self, type_: str):
 		if type_ == 'events':
 			self.INSERT.events(self.DATA['events'])
 		
@@ -352,10 +352,8 @@ class Parse:
 
 
 @no_except
-async def UpdateData(INSERT, SELECT, data_types):
+async def UpdateData(INSERT, SELECT, data_types: list):
 	#async with aiohttp.ClientSession() as session:
-
-	print("data_types", data_types)
 
 	session = requests.Session()
 	
