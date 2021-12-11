@@ -16,7 +16,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, CallbackQuery, Update
 from aiogram.utils import executor
 #from aiogram.utils.exceptions import MessageCantBeDeleted, MessageToDeleteNotFound, TerminatedByOtherGetUpdates
-from aiogram.utils.exceptions import Throttled, NetworkError, MessageNotModified, BotBlocked, TerminatedByOtherGetUpdates
+from aiogram.utils.exceptions import Throttled, NetworkError, MessageNotModified, MessageCantBeEdited, BotBlocked, TerminatedByOtherGetUpdates
 
 from aiogram.dispatcher import FSMContext, DEFAULT_RATE_LIMIT
 from aiogram.dispatcher.handler import CancelHandler, current_handler
@@ -50,8 +50,12 @@ from config import WEBHOOK_PATH, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT
 
 
 
+#int(os.getenv("PORT"))
+
 
 #directory = os.getcwd()
+
+log_file_local_path = log_settings['sink']
 
 
 # Set logging
@@ -63,7 +67,7 @@ logger.add(**log_settings)
 
 
 # Telegram
-bot = Bot(token=TOKEN)
+bot = Bot(token=TOKEN, parse_mode='html')
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -183,12 +187,13 @@ async def new_user(message: Message, send_location_button = False):
 @dp.callback_query_handler(lambda callback: callback.data == 'close')
 async def close(callback: CallbackQuery):
     await callback.message.delete()
+    CreateLog(callback, 'close')
 
 
 
 
 # TIMEZONE ------------------------------------------------------------------------------------------------------------------------------
-@dp.message_handler(commands=['start', 'change_timezone'])
+@dp.message_handler(commands=['start', 'change_timezone'], state='*')
 @rate_limit()
 async def change_timezone(message: Message, text = None, send_location_button = False):
     
@@ -292,10 +297,11 @@ async def live_matches(message: Message, callback = None):
     try:
         await message.edit_text(text, reply_markup=keyboard)
     except:
-        if not callback is None:
-            await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK['no_live_broadcasts'])
-        else:
+        if callback is None:
             await message.answer(text, reply_markup=keyboard)
+        else:
+            await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK['no_live_broadcasts'])
+            
     CreateLog(message, 'live_matches')
 
 
@@ -529,7 +535,6 @@ async def news(message: Message, callback = None, edit_message = False):
         try:
             await message.edit_text(answer_text, reply_markup=INLINE().news(), parse_mode='html', disable_web_page_preview=True)
         except MessageNotModified:
-            if not callback is None:
                 await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK['no_new_news'])
     else:
         await message.answer(answer_text, reply_markup=INLINE().news(), parse_mode='html', disable_web_page_preview=True)
@@ -649,15 +654,19 @@ async def network_error(update: Update, exception: NetworkError):
 @dp.message_handler(IDFilter(chat_id=ADMIN_IDS))
 async def admin_commands(message: Message):
 
-    message_text_split = message.text.split()
+    message_text_split = message.text.lower().split()
+    print(message_text_split)
     command = message_text_split[0]
+    print(command)
 
     if command == 'update':
         await UpdateData(INSERT, SELECT, message_text_split[1:])
         await message.answer(f"The bot has updated the data about {message_text_split[1:]}")
 
-    #elif command == '':
-
+    elif command == 'get':
+        if message_text_split[1] == 'log':
+            await bot.send_document(chat_id=message.chat.id, document=open(log_file_local_path, 'rb'))
+        
 
 
 
