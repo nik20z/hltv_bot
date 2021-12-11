@@ -65,3 +65,10 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
   
   <img src="https://user-images.githubusercontent.com/62090150/145674198-bf71b088-e72f-4c79-95a2-ac78a51c77d9.png" width="40%"></p>
 
+
+Future updates:
+
+- [ ] Adding a main stream to update data at regular intervals
+- [ ] Live broadcast start notification
+- [ ] Improving anti-flood system that can effectively block spammers
+
