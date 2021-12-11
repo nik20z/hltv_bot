@@ -58,4 +58,7 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
   <img src="https://user-images.githubusercontent.com/62090150/145674008-ff00f1e2-2ce9-43d5-aa15-4eac4f05cd55.png" width="30%"></p>
   
 - /news - latest news
+ 
+  <img src="https://user-images.githubusercontent.com/62090150/145674158-54da6b5e-8d76-46d5-a6d9-c2138288e16e.png" width="30%"></p>
+ 
 - /keyboard - show keyboard
