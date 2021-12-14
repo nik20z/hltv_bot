@@ -20,7 +20,8 @@ class Match:
 		self.match_soup = match_soup
 		self.matchType = matchType
 		self.href_split = self.match_soup.find('a')['href'].split('/')
-		self.team1_name, self.team2_name = None, None
+		self.team1_name = None
+		self.team2_name = None
 
 	def get_info(self):
 		self.teamNames()
@@ -241,13 +242,16 @@ class News:
 		
 
 	def get_info(self):
-		news_id = self.href_split[-2]
+		news_id = int(self.href_split[-2])
+		date_text = self.news_soup.find('div', class_='newsrecent').text
+		date_ = datetime.datetime.strptime(date_text, '%Y-%m-%d').date()
 		location = self.news_soup.find('img')['title']
 		country_flag = FLAG_SMILE(location)
 		newstext = self.news_soup.find('div', class_='newstext').text
 		href = self.href_split[-1]
 		
 		data = (news_id, 
+				date_,
 				newstext,
 				country_flag,
 				href
@@ -274,7 +278,14 @@ class Parse:
 
 	@time_of_function
 	def get_soup(self, type_link: str):
-		url = MAIN_URL + PART_LINKS[type_link]
+		if type_link == 'news':
+			now = datetime.datetime.utcnow()
+			year = datetime.datetime.strftime(now, '%Y')
+			month = datetime.datetime.strftime(now, '%B')
+			local_path = PART_LINKS[type_link](year, month)
+		else:
+			local_path = PART_LINKS[type_link]
+		url = MAIN_URL + local_path
 		response = self.session.get(url, headers=HEADERS)
 		soup = BeautifulSoup(response.content, 'lxml')
 		return soup
@@ -325,13 +336,12 @@ class Parse:
 		self.insert('events')
 
 	
-	def news(self, count_days = 2):
-		news_soup = self.get_soup('news')
-		days_news = news_soup.find_all('div', class_='standard-box standard-list')		
-		for one_day_news in days_news[:count_days]:
-			all_news_by_day = one_day_news.find_all('a', class_='newsline article')
-			news_data_array = [News(news_soup).get_info() for news_soup in all_news_by_day]
-			self.DATA['news'].extend(news_data_array)
+	def news(self):
+		news_soup = self.get_soup('news')	
+		all_news_soup_array = news_soup.find_all('a', class_='newsline article')
+		news_data_array = [News(x).get_info() for x in all_news_soup_array]
+
+		self.DATA['news'].extend(news_data_array)
 
 		self.insert('news')
 
@@ -352,7 +362,7 @@ class Parse:
 
 
 @no_except
-async def UpdateData(INSERT, SELECT, data_types: list):
+def UpdateData(INSERT, SELECT, data_types: list):
 	#async with aiohttp.ClientSession() as session:
 
 	session = requests.Session()

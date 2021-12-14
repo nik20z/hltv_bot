@@ -114,8 +114,14 @@ query_select_event_id_by_name = lambda event_name: "SELECT id FROM events WHERE 
 # Получаем данные о новостях
 query_select_news = lambda number_of_articles: """SELECT id, news_text, flag, href 
 													FROM news 
-													ORDER BY id DESC 
+													ORDER BY news.day DESC 
 													LIMIT {0};""".format(number_of_articles)
+
+query_select_news_by_date = lambda date_: """SELECT id, news_text, flag, href 
+												FROM news 
+												WHERE news.day = date '{0}'
+												ORDER BY news.day DESC
+											""".format(date_)
 
 
 
@@ -153,13 +159,14 @@ query_insert_events = """INSERT INTO events
 						ON CONFLICT (id) DO UPDATE
 						SET (location, flag, start_date, stop_date, prize, teams_id, count_teams)
 						= (EXCLUDED.location, EXCLUDED.flag, EXCLUDED.start_date, EXCLUDED.stop_date, EXCLUDED.prize, EXCLUDED.teams_id, EXCLUDED.count_teams)
+						WHERE EXCLUDED.type NOTNULL
 						"""
 
 
 # ---> [TABLE news]
 
 # Инсертим данные о новостях
-query_insert_news = "INSERT INTO news (id, news_text, flag, href) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
+query_insert_news = "INSERT INTO news (id, day, news_text, flag, href) VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
 
 
 
@@ -239,8 +246,11 @@ class SELECT:
 		cursor.execute(query_select_event_info(event_id))
 		return cursor.fetchone()
 
-	def news(self, number_of_articles = 15):
-		cursor.execute(query_select_news(number_of_articles))
+	def news(self, date_ = None, number_of_articles = 15):
+		if date_ is None:
+			cursor.execute(query_select_news(number_of_articles))
+		else:
+			cursor.execute(query_select_news_by_date(date_))
 		return cursor.fetchall()
 
 	def blocked_user_ids(self):
@@ -285,18 +295,118 @@ class UPDATE:
 
 
 class DELETE:
-	def function():
-		pass
+
+	def table(self, tableName: str):
+		cursor.execute(f"DROP TABLE {tableName} IF EXISTS")
+		connection.commit()
+
+	def one_row(self, tableName: str, id_: int):
+		cursor.execute(f"DELETE FROM {tableName} WHERE id = {id_}")
+		connection.commit()
+
+	def rows(self, tableName: str):
+		cursor.execute(f"DELETE FROM {tableName}")
+		connection.commit()
 
 
 
 class TABLE:
-	def function():
-		pass
+
+	def telegram(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS telegram (
+							id integer NOT NULL PRIMARY KEY,
+							name text,
+							joined date,
+							ban boolean,
+							timezone interval DEFAULT '00:00:00'::interval,
+							live_notification boolean DEFAULT true
+						);""")
+		connection.commit()
+
+	def events(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS events (
+							id smallint NOT NULL PRIMARY KEY,
+							type VARCHAR (1),
+							name text,
+							location text,
+							start_date date,
+							stop_date date,
+							prize integer,
+							count_teams smallint,
+							flag VARCHAR (7),
+							teams_id integer[] 
+						);""")
+		connection.commit()
+
+	def teams(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS teams (
+							id integer NOT NULL PRIMARY KEY,
+							name text NOT NULL
+						);""")
+		connection.commit()
+
+	def matches(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS matches (
+							id integer NOT NULL PRIMARY KEY,
+							type VARCHAR (1),
+							unix_datetime timestamp without time zone,
+							stars smallint,
+							lan boolean,
+							team1_id smallint REFERENCES teams (id),
+							team2_id smallint REFERENCES teams (id),
+							meta text,
+							event_id smallint REFERENCES events (id),
+							result_score integer[] 
+						);""")
+		connection.commit()
+
+	def players(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS players (
+							id integer NOT NULL PRIMARY KEY,
+							nik_name text NOT NULL,
+							name text NOT NULL
+						);""")
+		connection.commit()
+
+	def news(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS news (
+							id integer NOT NULL PRIMARY KEY,
+							day date,
+							news_text text,
+							flag VARCHAR (7),
+							href text
+						);""")
+		connection.commit()
+
+	def stat(self):
+		cursor.execute("""CREATE TABLE IF NOT EXISTS stat (
+							day date NOT NULL PRIMARY KEY,
+							count_text integer,
+							count_callback integer
+						);""")
+		connection.commit()
+
+	
+
+def CreateDatabase():
+	cursor.execute("CREATE DATABASE IF NOT EXISTS hltv_database")
+	connection.commit()
 
 
 
 
+def check_exists_tables():
+	TABLE().telegram()
+
+	TABLE().events()
+
+	TABLE().players()
+	TABLE().teams()
+	TABLE().matches()
+	
+	TABLE().news()
+
+	TABLE().stat()
 
 
 
@@ -311,8 +421,9 @@ def CONNECT(db_settings: dict):
 
 	cursor.execute("SELECT version();")
 	record = cursor.fetchone()
-	print("Вы подключены к - ", record, "\n")
+	print(record, "\n")
 
+	check_exists_tables()
 
 	return TABLE(), INSERT(), UPDATE(), SELECT(), DELETE()
 
