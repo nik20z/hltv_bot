@@ -74,8 +74,12 @@ class INLINE:
 	def __init__(self, row_width = 3):
 		self.keyboard = InlineKeyboardMarkup(row_width=row_width)
 
-	def news(self):
-		self.keyboard.add(BUTTON("❌").inline('close'), BUTTON("🔄").inline("news_update"))
+	def news(self, update_button = True):
+		buttons = [BUTTON("❌").inline('close')]
+		if update_button:
+			buttons.append(BUTTON("🔄").inline("news_update"))
+		
+		self.keyboard.add(*buttons)
 		return self.keyboard
 
 	def settings(self, user_info: tuple):
@@ -229,7 +233,7 @@ class INLINE:
 			event_id = event[0]
 			event_name = event[1]
 			self.keyboard.add(BUTTON(event_name).inline(f"{last_callback_data} ei {event_id}"))
-		self.keyboard.add(BUTTON("⬅").inline(f"{last_callback_data} events_type {event_id}"))
+		self.keyboard.add(BUTTON("⬅").inline(f"{last_callback_data} events_type events_type"))
 		return self.keyboard
 
 

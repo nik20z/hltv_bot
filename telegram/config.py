@@ -1,5 +1,5 @@
 GOD_ID = 1020624735
-ADMIN_IDS = [GOD_ID, 1475103948]
+ADMIN_IDS = [GOD_ID]
 
 
 ANSWER_KEYBOARD = {}
@@ -12,28 +12,49 @@ ANSWER_KEYBOARD = {}
 # 🌐
 
 
-flag_smiles = {'Finland': '🇫🇮',
-				'Germany': '🇩🇪',
-				'Denmark': '🇩🇰',
-				'Norway': '🇳🇴',
-				'Ukraine': '🇺🇦',
-				'Poland': '🇵🇱',
-				'Serbia': '🇷🇸',
-				'China': '🇨🇳',
-				'Australia': '🇦🇺',
-				'Brazil': '🇧🇷',
-				'Switzerland': '🇨🇭',
-				'United States': '🇺🇸',
-				'North America': '🇨🇦 🇺🇸',
-				'South America': '🌎',
-				'Canada': '🇨🇦',
-				'Oceania': '🇳🇿',
-				'Sweden': '🇸🇪',
+flag_smiles = {'Asia': '🌏',
+                'Australia': '🇦🇺',
+                'Austria': '🇦🇹',
+                'Belgium': '🇧🇪',
+                'Belarus': '🇧🇾',
+                'Brazil': '🇧🇷',
+                'Bulgaria': '🇧🇬',
+                'Canada': '🇨🇦',
+                'China': '🇨🇳',
+                'CIS': 'CIS',
+                'Cyprus': '🇨🇾',
+                'Czech Republic': '🇨🇿',             
+                'Denmark': '🇩🇰',
                 'Estonia': '🇪🇪',
-
-				'Europe': '🇪🇺',
-				'Asia': '🌏'
-				}
+                'Europe': '🇪🇺',
+                'Finland': '🇫🇮',
+                'France': '🇫🇷',
+				'Germany': '🇩🇪',
+                'Hungary': '🇭🇺',
+                'Iceland': '🇮🇸',
+                'Ireland': '🇮🇪',
+                'Italy': '🇮🇹',
+                'Japan': '🇯🇵',
+                'Kazakhstan': '🇰🇿',
+                'Malta': '🇲🇹',
+				'Netherlands': '🇳🇱',
+                'New Zealand': '🇳🇿',
+				'North America': '🇨🇦 🇺🇸',
+                'Norway': '🇳🇴',				
+                'Oceania': '🇳🇿',
+				'Poland': '🇵🇱',
+                'Romania': '🇷🇴',
+                'Russia': '🇷🇺',
+                'Slovakia': '🇸🇰',
+                'South America': '🌎',
+				'Serbia': '🇷🇸',
+                'Spain': '🇪🇸',
+                'Sweden': '🇸🇪',
+                'Switzerland': '🇨🇭',
+				'Ukraine': '🇺🇦',
+                'United Kingdom': '🇬🇧',
+				'United States': '🇺🇸'
+                }
 
 FLAG_SMILE = lambda location: flag_smiles.get(location.strip(), '🌐')
 
@@ -63,6 +84,8 @@ ANSWER_TEXT = {
     'matches_for_event': "Matches for the Event",
     'text_by_event_type': lambda event_type: {'O': 'Ongoing events', 'B': 'Big events', 'S': 'Small events'}[event_type],
     'event_info': "Event information",
+
+    'no_news': 'Тo news for the selected day',
     
     'settings': "Settings",
     
