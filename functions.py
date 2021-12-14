@@ -1,7 +1,15 @@
 import re
 import time
 import datetime
+import threading
 
+from config import Intervals_minutes
+
+
+def UpdateData_by_timer(INSERT, SELECT, UpdateData):
+    for tableName, interval in Intervals_minutes.items():
+        func = UpdateData(INSERT, SELECT, [tableName])
+        threading.Timer(interval, func)
 
 
 
