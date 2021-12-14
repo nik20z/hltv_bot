@@ -44,12 +44,13 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
   <img src="https://user-images.githubusercontent.com/62090150/145674082-a13870d3-fc23-4186-b343-fa352191810b.png" width="55%"></p>
   <img src="https://user-images.githubusercontent.com/62090150/145674112-8eb6e62f-0756-4aa1-a064-332f8d73d7f9.png" width="55%"></p>
 
-  
-- /matches {date} - matches for a specific day
+- /matches - day selection with upcoming matches
+- matches {date} - matches for a specific day
   
   <img src="https://user-images.githubusercontent.com/62090150/145673959-a775d45f-9b4b-4048-94ea-c1593b39bdd4.png" width="55%"></p>
   
-- /results {date} - results for a specific day
+- /results - day selection with results 
+- results {date} - results for a specific day
 - /events - events info
 
   <img src="https://user-images.githubusercontent.com/62090150/145673930-8c55d5d6-cd36-4871-8ad2-2225eb67495f.png" width="55%"></p>
@@ -58,6 +59,7 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
   <img src="https://user-images.githubusercontent.com/62090150/145674008-ff00f1e2-2ce9-43d5-aa15-4eac4f05cd55.png" width="55%"></p>
   
 - /news - latest news
+- news {date} - news for a specific day
  
   <img src="https://user-images.githubusercontent.com/62090150/145674158-54da6b5e-8d76-46d5-a6d9-c2138288e16e.png" width="55%"></p>
   
