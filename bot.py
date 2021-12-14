@@ -65,8 +65,7 @@ logger.add(**log_settings)
 [TABLE, INSERT, UPDATE, SELECT, DELETE] = CONNECT(db_settings)
 
 # UpdateData
-#UpdateData_by_timer(INSERT, SELECT, UpdateData)
-UpdateData(INSERT, SELECT, ['news'])
+UpdateData_by_timer(INSERT, SELECT, UpdateData)
 
 # Telegram
 bot = Bot(token=TOKEN, parse_mode='html')
