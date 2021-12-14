@@ -35,6 +35,7 @@ from data.parse import UpdateData
 
 from log.methods import CreateLog
 
+from functions import UpdateData_by_timer
 from functions import check_message_text, check_callback_split
 from functions import get_timezone_text, get_correct_date
 
@@ -50,8 +51,6 @@ from config import WEBHOOK_PATH, WEBHOOK_URL, WEBAPP_HOST, WEBAPP_PORT
 
 
 
-#int(os.getenv("PORT"))
-
 
 #directory = os.getcwd()
 
@@ -65,6 +64,9 @@ logger.add(**log_settings)
 # Database connection
 [TABLE, INSERT, UPDATE, SELECT, DELETE] = CONNECT(db_settings)
 
+# UpdateData
+#UpdateData_by_timer(INSERT, SELECT, UpdateData)
+UpdateData(INSERT, SELECT, ['news'])
 
 # Telegram
 bot = Bot(token=TOKEN, parse_mode='html')
@@ -77,7 +79,6 @@ BLOCKED_USERS = SELECT.blocked_user_ids()
 class UserStates(StatesGroup):
     timezone_method = State()
     timezone = State()
-
 
 
 
@@ -193,7 +194,7 @@ async def close(callback: CallbackQuery):
 
 
 # TIMEZONE ------------------------------------------------------------------------------------------------------------------------------
-@dp.message_handler(commands=['start', 'change_timezone'], state='*')
+@dp.message_handler(commands=['start', 'change_timezone'])
 @rate_limit()
 async def change_timezone(message: Message, text = None, send_location_button = False):
     
@@ -517,10 +518,10 @@ async def event_matches(callback: CallbackQuery):
 # NEWS ------------------------------------------------------------------------------------------------------------------------------
 @dp.message_handler(commands=['news'])
 @rate_limit()
-async def news(message: Message, callback = None, edit_message = False):
+async def news(message: Message, date_ = None, callback = None):
     answer_text = ''
     
-    news_object = SELECT.news()
+    news_object = SELECT.news(date_=date_)
     for one_news in news_object:
         id_ = one_news[0]
         text = one_news[1]
@@ -531,21 +532,39 @@ async def news(message: Message, callback = None, edit_message = False):
 
         answer_text += f"{flag} <a href='{url}'>{text}</a>\n\n"
 
-    if not callback is None and edit_message:
+    if answer_text == '':
+        await message.answer(ANSWER_TEXT['no_news'])
+
+    elif not callback is None:
         try:
-            await message.edit_text(answer_text, reply_markup=INLINE().news(), parse_mode='html', disable_web_page_preview=True)
+            await message.edit_text(answer_text, reply_markup=INLINE().news(), disable_web_page_preview=True)
         except MessageNotModified:
-                await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK['no_new_news'])
+            await bot.answer_callback_query(callback_query_id=callback.id, text=ANSWER_CALLBACK['no_new_news'])
     else:
-        await message.answer(answer_text, reply_markup=INLINE().news(), parse_mode='html', disable_web_page_preview=True)
+        update_button = True if date_ is None else False
+        await message.answer(answer_text, reply_markup=INLINE().news(update_button=update_button), disable_web_page_preview=True)
 
     CreateLog(message, 'news')
+
+
+@dp.message_handler(Text(startswith=['news'], ignore_case=True))
+@rate_limit()
+async def news_by_date(message: Message):
     
+    date_text = message.text.split()[-1].replace('/', '.')
+    if date_text == 'news':
+        return await news(message)
+    date_ = get_correct_date(date_text)
+
+    if date_ is None:
+        return await message.answer(ANSWER_TEXT['correct_date'])
+    await news(message, date_=date_) 
+
 
 @dp.callback_query_handler(lambda callback: 'news_update' in callback.data)
 @rate_limit()
 async def news_update(callback: CallbackQuery):
-    await news(callback.message, callback = callback, edit_message=True)
+    await news(callback.message, callback = callback)
 
 
 
@@ -572,6 +591,9 @@ async def settings_info(callback: CallbackQuery):
                                     "live_notification": "Live broadcast start notification"
                                     
                                     }
+
+
+
     info_parameter = callback.data.split()[-1]
 
     text = settings_info_descriptions.get(info_parameter, "Error")
@@ -655,18 +677,19 @@ async def network_error(update: Update, exception: NetworkError):
 async def admin_commands(message: Message):
 
     message_text_split = message.text.lower().split()
-    print(message_text_split)
     command = message_text_split[0]
-    print(command)
 
     if command == 'update':
-        await UpdateData(INSERT, SELECT, message_text_split[1:])
+        UpdateData(INSERT, SELECT, message_text_split[1:])
         await message.answer(f"The bot has updated the data about {message_text_split[1:]}")
 
     elif command == 'get':
         if message_text_split[1] == 'log':
             await bot.send_document(chat_id=message.chat.id, document=open(log_file_local_path, 'rb'))
-        
+
+        elif message_text_split[1] == 'stat':
+            print('stat')
+
 
 
 
