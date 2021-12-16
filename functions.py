@@ -3,13 +3,13 @@ import time
 import datetime
 import threading
 
-from config import Intervals_minutes
+from config import Intervals
 
 
 
 def UpdateData_by_timer(INSERT, SELECT, UpdateData):
     threads = []
-    for tableName, interval in Intervals_minutes.items():
+    for tableName, interval in Intervals.items():
         one_update_thread = threading.Thread(target=UpdateData, 
                             name=tableName, 
                             args=(INSERT, SELECT, [tableName]), 
