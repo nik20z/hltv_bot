@@ -67,6 +67,7 @@ logger.add(**log_settings)
 # UpdateData
 UpdateData_by_timer(INSERT, SELECT, UpdateData)
 
+
 # Telegram
 bot = Bot(token=TOKEN, parse_mode='html')
 storage = MemoryStorage()
@@ -191,8 +192,14 @@ async def close(callback: CallbackQuery):
 
 
 
+# HELP -------------------------------------------------------------------------------------------------------------------------------
+@dp.message_handler(commands=['help'])
+@rate_limit()
+async def help(message: Message):
+    await message.answer(ANSWER_TEXT['help'])
 
-# TIMEZONE ------------------------------------------------------------------------------------------------------------------------------
+
+# TIMEZONE -----------------------------------------------------------------------------------------------------------------------------
 @dp.message_handler(commands=['start', 'change_timezone'])
 @rate_limit()
 async def change_timezone(message: Message, text = None, send_location_button = False):
@@ -223,7 +230,7 @@ async def selection_timezone(message: Message):
     CreateLog(message, 'selection_timezone')
 
 
-@dp.message_handler(content_types=['location'], state=UserStates.timezone_method)
+@dp.message_handler(content_types=['location'], state='*')
 async def location(message: Message, state: FSMContext):
 
     user_id = message.chat.id
@@ -416,12 +423,15 @@ async def matches_by_date(callback: CallbackQuery, match_type = None, date_ = No
 @rate_limit()
 async def match_info(callback: CallbackQuery):
 
+    user_id = callback.message.chat.id
+
     last_callback_data = callback.data
     callback_data_split = last_callback_data.split()
 
     scorebot_id = callback_data_split[-1]
     
-    user_timezone = SELECT.user_timezone(callback.message.chat.id)
+    user_timezone = SELECT.user_timezone(user_id)
+    #user_subscriptions = SELECT.user_subscriptions(user_id)
     match_info_obj = SELECT.match_info(scorebot_id, user_timezone)
 
     text = ANSWER_TEXT['match_info']

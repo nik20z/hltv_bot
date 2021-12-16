@@ -6,10 +6,15 @@ import threading
 from config import Intervals_minutes
 
 
+
 def UpdateData_by_timer(INSERT, SELECT, UpdateData):
+    threads = []
     for tableName, interval in Intervals_minutes.items():
-        func = UpdateData(INSERT, SELECT, [tableName])
-        threading.Timer(interval, func)
+        one_update_thread = threading.Thread(target=UpdateData, 
+                            name=tableName, 
+                            args=(INSERT, SELECT, [tableName]), 
+                            kwargs={'interval': interval})
+        one_update_thread.start()
 
 
 
