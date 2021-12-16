@@ -15,6 +15,13 @@ log_settings = {
 }
 
 
+Intervals = {
+    'events': 24*60,
+    'news': 180,
+    'matches': 120
+}
+
+
 TOKEN = "YOUR_TOKEN"
 
 
