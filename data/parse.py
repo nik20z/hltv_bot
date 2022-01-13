@@ -37,14 +37,14 @@ class Match:
 				self.get_event_ID(), # smallint
 				self.resultScore() # integer[]
 				)
-		
+		print(data)
 		return data
 
 	@no_except
 	def get_event_ID(self):
 		event_name = self.matchEventName().strip()
 		event_id = self.SELECT.event_id_by_name(event_name)
-		return event_id[0]
+		return event_id
 
 	def scorebot_ID(self):
 		return int(self.href_split[2])
@@ -64,18 +64,19 @@ class Match:
 
 	@no_except
 	def lan(self):
-		return True if self.match_soup['lan'] == 'true' else False
+		return self.match_soup['lan'] == 'true'
 
 	@no_except
 	def team_ID(self, num: int, team_name: str):
-		if self.matchType == 'R':
-			return self.SELECT.team_id_by_name(team_name)
-		else:
+		return self.SELECT.team_id_by_name(team_name, one_result=True)[0]
+		'''
+		team_id = self.SELECT.team_id_by_name(team_name, one_result=True)
+		if team_id is None:
 			team_id = int(self.match_soup[f"team{num}"])
 			self.INSERT.teams([(team_id, team_name)])
 			return team_id
-			
-			
+		return team_id[0]
+		'''
 
 	@no_except
 	def teamNames(self):
@@ -83,7 +84,7 @@ class Match:
 		if matchTeamName_soup == []:
 			matchTeamName_soup = self.match_soup.find_all('img', class_='team-logo')
 
-		teamNames_array = tuple(matchTeamName_soup[x]['title'].replace(' ', '') for x in (0,-1))
+		teamNames_array = tuple(matchTeamName_soup[x]['title'] for x in (0,-1))
 
 		self.team1_name, self.team2_name = teamNames_array[0], teamNames_array[-1]
 		if self.team1_name == self.team2_name:
@@ -155,9 +156,9 @@ class Event:
 				self.startTime, # date
 				self.stopTime, # date
 				self.prize, # integer
-				self.get_teams_id(), # integer []
 				self.count_teams # smallint
 				)
+
 		return data
 	
 
@@ -223,13 +224,18 @@ class Event:
 		self.prize = self.prize(table_soup)
 		self.count_teams = self.count_teams(table_soup)
 
-	@no_except
+	#@no_except
 	def get_teams_id(self):
 		team_logos = self.event_soup.find('div', class_='top-team-logos')
-		teams_id = [self.SELECT.team_id_by_name(teamName['title'])[0] for teamName in team_logos.find_all('img')]
-		if self.count_teams is None:
-			self.count_teams = len(teams_id)
-		return teams_id
+		try:
+			teams_id = [self.SELECT.team_id_by_name(teamName['title'])[0] for teamName in team_logos.find_all('img')]
+			if self.count_teams is None:
+				self.count_teams = len(teams_id)
+			return teams_id
+		except:
+			self.count_teams = 0
+			return []
+		
 				
 
 
@@ -260,19 +266,115 @@ class News:
 
 
 
+class StatsTeams:
+
+	def __init__(self, team_soup):
+		self.team_soup = team_soup
+		self.href_split = self.team_soup.find('a')['href'].split('/')
+
+	def get_info(self):
+		data = (int(self.team_id()),
+				self.team_name(),
+				self.flag(),
+				int(self.maps()),
+				int(self.kdDiff()),
+				float(self.KD()),
+				float(self.rating()),
+			)
+		return data
+
+	def value(self, tag: str, class_: str):
+		return self.team_soup.find(tag, class_=class_).text
+
+	def team_id(self):
+		return self.href_split[-2]
+
+	def team_name(self):
+		return self.team_soup.find('a').text
+
+	def flag(self):
+		country = self.team_soup.find('img')['title']
+		return FLAG_SMILE(country)
+
+	def maps(self):
+		return self.value('td', 'statsDetail')
+
+	def kdDiff(self):
+		return self.value('td', 'kdDiffCol')
+
+	def KD(self):
+		return self.team_soup.find_all('td', class_='statsDetail')[-1].text
+
+	def rating(self):
+		return self.value('td', 'ratingCol')
+
+
+
+class StatsPlayers:
+
+	def __init__(self, player_soup):
+		self.smiles_tuple = []
+
+		self.player_soup = player_soup
+		self.href_split = self.player_soup.find('a')['href'].split('/')
+
+	def get_info(self):
+
+		data = (int(self.player_id()),
+				self.player_nik_name(),
+				self.flag(),
+				int(self.number_maps()),
+				int(self.number_rounds()),
+				int(self.kdDiff()),
+				float(self.KD()),
+				float(self.rating())
+			)
+		return data
+
+	def value(self, tag: str, class_: str):
+		return self.player_soup.find(tag, class_=class_).text
+
+	def player_id(self):
+		return self.href_split[-2]
+
+	def player_nik_name(self):
+		return self.player_soup.find('a').text
+
+	def flag(self):
+		country = self.player_soup.find('img')['title']
+		return FLAG_SMILE(country)
+
+	def number_maps(self):
+		return self.value('td', 'statsDetail')
+
+	def number_rounds(self):
+		return self.value('td', 'statsDetail gtSmartphone-only')
+
+	def kdDiff(self):
+		return self.value('td', 'kdDiffCol')
+
+	def KD(self):
+		return self.player_soup.find_all('td', class_='statsDetail')[-1].text
+
+	def rating(self):
+		return self.value('td', 'ratingCol')
+
 
 
 
 class Parse:
 
-	def __init__(self, INSERT, SELECT, session):
+	def __init__(self, INSERT, SELECT, UPDATE, session):
 		self.DATA = {'matches': [],
 					 'events': [],
 					 'teams': [],
-					 'news': []
+					 'news': [],
+					 'stats_teams': [],
+					 'stats_players': []
 					}
 		self.INSERT = INSERT
 		self.SELECT = SELECT
+		self.UPDATE = UPDATE
 		self.session = session
 
 
@@ -337,7 +439,7 @@ class Parse:
 
 	
 	def news(self):
-		news_soup = self.get_soup('news')	
+		news_soup = self.get_soup('news')
 		all_news_soup_array = news_soup.find_all('a', class_='newsline article')
 		news_data_array = [News(x).get_info() for x in all_news_soup_array]
 
@@ -345,7 +447,28 @@ class Parse:
 
 		self.insert('news')
 
-	
+
+	def stats_teams(self):
+		stats_teams_soup = self.get_soup('stats_teams')
+		rating_table = stats_teams_soup.find('table', class_='player-ratings-table').find('tbody')
+
+		stats_teams_array = [StatsTeams(x).get_info() for x in rating_table.find_all('tr')]
+
+		self.DATA['stats_teams'].extend(stats_teams_array)
+
+		self.insert('stats_teams')
+
+	def stats_players(self):
+		stats_players_soup = self.get_soup('stats_players')
+		rating_table = stats_players_soup.find('table', class_='player-ratings-table').find('tbody')
+
+		stats_players_array = [StatsPlayers(x).get_info() for x in rating_table.find_all('tr')]
+
+		self.DATA['stats_players'].extend(stats_players_array)
+
+		self.insert('stats_players')
+
+
 	def insert(self, type_: str):
 		if type_ == 'events':
 			self.INSERT.events(self.DATA['events'])
@@ -355,30 +478,48 @@ class Parse:
 
 		elif type_ == 'news':
 			self.INSERT.news(self.DATA['news'])
+
+		elif type_ == 'stats_teams':
+			self.INSERT.stats_teams(self.DATA['stats_teams'])
+
+		elif type_ == 'stats_players':
+			self.INSERT.stats_players(self.DATA['stats_players'])
+
+
+
 	
 	
 
 
 
 
-@no_except
-def UpdateData(INSERT, SELECT, data_types: list):
-	#async with aiohttp.ClientSession() as session:
-
-	session = requests.Session()
+#@no_except
+def UpdateData(INSERT, SELECT, UPDATE, data_types: list, interval = None):
 	
-	p = Parse(INSERT, SELECT, session)
+	while True:
+				
+		session = requests.Session()
+		p = Parse(INSERT, SELECT, UPDATE, session)
+
+		if 'events' in data_types:
+			p.events()
+
+		if 'matches' in data_types:
+			p.upcoming_and_live()
+			p.results()
+			p.insert('matches')
+
+		if 'news' in data_types:
+			p.news()
+
+		if 'stats_teams' in data_types:
+			p.stats_teams()
+
+		if 'stats_players' in data_types:
+			p.stats_players()
+
+		if interval is None:
+			return
+
+		time.sleep(interval)
 	
-	if 'events' in data_types:
-		p.events()
-
-	if 'matches' in data_types:
-		p.upcoming_and_live()
-		p.results()
-		p.insert('matches')
-
-	if 'news' in data_types:
-		p.news()
-
-
-	return True
