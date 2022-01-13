@@ -3,16 +3,16 @@ import time
 import datetime
 import threading
 
-from config import Intervals
+from config import Intervals_parse
 
 
 
-def UpdateData_by_timer(INSERT, SELECT, UpdateData):
+def UpdateData_by_timer(INSERT, SELECT, UPDATE, UpdateData):
     threads = []
-    for tableName, interval in Intervals.items():
+    for tableName, interval in Intervals_parse.items():
         one_update_thread = threading.Thread(target=UpdateData, 
                             name=tableName, 
-                            args=(INSERT, SELECT, [tableName]), 
+                            args=(INSERT, SELECT, UPDATE, [tableName]), 
                             kwargs={'interval': interval})
         one_update_thread.start()
 
@@ -21,10 +21,10 @@ def UpdateData_by_timer(INSERT, SELECT, UpdateData):
 check_message_text = lambda message, commands: message.text.lower().replace('/','') in commands
 
 
-def check_callback_split(callback, commands: list):
+def check_callback_split(callback, commands: list, ind = -2):
     callback_data_split = callback.data.split()
     try:
-        return callback_data_split[-2] in commands
+        return callback_data_split[ind] in commands
     except:
         return False
 
@@ -83,7 +83,7 @@ def get_date_with_replaces(date_text: str, format_: str, replace_month = None, r
 
 
 
-def get_correct_date(date_text: str):
+def get_correct_date(date_text: str, format_ = "%d.%m.%Y"):
     now_date = datetime.datetime.now().date()
     date_text_split = date_text.split('.')
     
@@ -93,7 +93,11 @@ def get_correct_date(date_text: str):
     elif len(date_text_split) == 2:
         return get_date_with_replaces(date_text, "%d.%m", replace_year=now_date.year)
     
-    return get_date_with_replaces(date_text, "%d.%m.%Y")
+    year_text = date_text_split[-1]
+    if len(year_text) == 2:
+        format_ = "%d.%m.%y"
+
+    return get_date_with_replaces(date_text, format_)
 
 
 

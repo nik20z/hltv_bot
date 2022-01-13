@@ -1,8 +1,8 @@
 db_settings = {
-                'user': "postgres",
-                'password': "YOUR_PASSWORD",
+                'user': "user_name",
+                'password': "password",
                 'host': "localhost",
-                'port': 5432,
+                'port': 5432, 
                 'database': 'hltv'
 }
 
@@ -15,18 +15,31 @@ log_settings = {
 }
 
 
-Intervals = {
-    'events': 24*60,
-    'news': 180,
-    'matches': 120
+
+interval_hours = lambda hour: 3600*hour
+interval_minutes = lambda minute: 60*minute
+
+DEFAULT_INTERVAL_UPDATE = interval_hours(1)
+
+Intervals_parse = {
+    'events': interval_hours(24),
+    'news': interval_hours(3),
+    'matches': interval_hours(2)
 }
 
+Intervals = lambda func_name: {
+                                'LiveNotifications': Intervals_parse['matches'],
+                                'NewsNotifications': Intervals_parse['news'],
+                                'DeleteOldEvents': interval_hours(24)
+}.get(func_name, DEFAULT_INTERVAL_UPDATE)
 
-TOKEN = "YOUR_TOKEN"
+
+
+TOKEN = ""
 
 
 # webhook settings
-WEBHOOK_HOST = ''
+WEBHOOK_HOST = 'https://16b5-5-167-46-228.ngrok.io'
 WEBHOOK_PATH = ''
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
