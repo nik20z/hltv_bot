@@ -37,7 +37,7 @@ class Match:
 				self.get_event_ID(), # smallint
 				self.resultScore() # integer[]
 				)
-		print(data)
+		#print(data)
 		return data
 
 	@no_except
@@ -68,15 +68,14 @@ class Match:
 
 	@no_except
 	def team_ID(self, num: int, team_name: str):
-		return self.SELECT.team_id_by_name(team_name, one_result=True)[0]
-		'''
-		team_id = self.SELECT.team_id_by_name(team_name, one_result=True)
-		if team_id is None:
+		try:
 			team_id = int(self.match_soup[f"team{num}"])
 			self.INSERT.teams([(team_id, team_name)])
-			return team_id
-		return team_id[0]
-		'''
+		except:
+			team_id = self.SELECT.team_id_by_exact_name(team_name)[0]
+		return team_id
+
+		#None (8831, 'None Just Qatar', '🌐')
 
 	@no_except
 	def teamNames(self):
@@ -316,11 +315,12 @@ class StatsPlayers:
 		self.smiles_tuple = []
 
 		self.player_soup = player_soup
-		self.href_split = self.player_soup.find('a')['href'].split('/')
+		self.href_player_split = self.player_soup.find('a')['href'].split('/')
 
 	def get_info(self):
 
 		data = (int(self.player_id()),
+				self.team_id(),
 				self.player_nik_name(),
 				self.flag(),
 				int(self.number_maps()),
@@ -335,7 +335,7 @@ class StatsPlayers:
 		return self.player_soup.find(tag, class_=class_).text
 
 	def player_id(self):
-		return self.href_split[-2]
+		return self.href_player_split[-2]
 
 	def player_nik_name(self):
 		return self.player_soup.find('a').text
@@ -343,6 +343,10 @@ class StatsPlayers:
 	def flag(self):
 		country = self.player_soup.find('img')['title']
 		return FLAG_SMILE(country)
+
+	def team_id(self):
+		href_team_split = self.player_soup.find('td', class_='teamCol').find('a')['href']
+		return href_team_split.split('/')[-2]
 
 	def number_maps(self):
 		return self.value('td', 'statsDetail')
@@ -411,10 +415,6 @@ class Parse:
 		result_con_soup_array = resultsHolder_allres_soup.find_all('div', class_='result-con') 
 
 		self.DATA['matches'].extend([Match(self.INSERT, self.SELECT, result_con_soup, 'R').get_info() for result_con_soup in result_con_soup_array])
-
-
-	def teams(self):
-		pass
 
 	
 	def events(self):
@@ -497,7 +497,7 @@ class Parse:
 def UpdateData(INSERT, SELECT, UPDATE, data_types: list, interval = None):
 	
 	while True:
-				
+		
 		session = requests.Session()
 		p = Parse(INSERT, SELECT, UPDATE, session)
 
@@ -519,7 +519,7 @@ def UpdateData(INSERT, SELECT, UPDATE, data_types: list, interval = None):
 			p.stats_players()
 
 		if interval is None:
-			return
+			return 
 
 		time.sleep(interval)
 	

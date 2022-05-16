@@ -39,12 +39,18 @@ query_select_user_ids_for_notice = lambda match_id, team1_id, team2_id, event_id
 																						""".format(match_id, team1_id, team2_id, event_id)
 
 # 
+'''
 query_select_notice = lambda user_id, id_, colomn_name: """SELECT CASE 
 																WHEN id = {0} AND {1} = ANY ({2})
 																THEN 1
 																ELSE 0
 																END
 															FROM telegram
+															""".format(user_id, id_, colomn_name)
+'''
+
+query_select_notice = lambda user_id, id_, colomn_name: """SELECT 1 FROM telegram
+																WHERE id = {0} AND {1} = ANY ({2});
 															""".format(user_id, id_, colomn_name)
 
 # 
@@ -140,7 +146,10 @@ query_select_matches_by_team_id = lambda team_id, match_type, timezone, sort_typ
 # ---> [TABLE teams]
 
 # Получаем id команды по её названию 
-query_select_team_id_by_name = lambda team_name: "SELECT id, name, flag FROM teams WHERE name ILIKE '%{0}%'".format(team_name)
+query_select_teams_by_name = lambda team_name: "SELECT id, name, flag FROM teams WHERE name ILIKE '%{0}%'".format(team_name)
+
+# Получаем id команды по её ТОЧНОМУ названию 
+query_select_team_id_by_exact_name = lambda team_name: "SELECT id, name, flag FROM teams WHERE name = '{0}'".format(team_name)
 
 # 
 query_select_player_id_by_name = lambda player_name: "SELECT id, nik_name, name, flag FROM players WHERE nik_name ILIKE '%{0}%'".format(player_name)
@@ -151,7 +160,7 @@ query_select_team_info = lambda team_id: "SELECT id, name, flag FROM teams WHERE
 query_select_details_by_team = lambda team_id: "SELECT id, name, flag, number_maps, kd_diff, kd, rating_1_0 FROM teams WHERE id = {0}".format(team_id)
 
 # 
-query_select_teams_by_ids_array = lambda ids_array: """SELECT t.id, t.name
+query_select_teams_by_ids_array = lambda ids_array: """SELECT t.id, t.name, t.flag
 														FROM unnest(ARRAY[{0}]) team_id
 														LEFT JOIN teams t on t.id=team_id
 														ORDER BY t.name
@@ -226,6 +235,15 @@ query_select_news_notice = lambda offset: """WITH updated AS (UPDATE news SET no
 															LIMIT {0};
 														""".format(offset)
 
+# ---> [TABLE players]
+
+# 
+query_select_player_info = lambda player_id: """SELECT id, nik_name, name, flag, number_maps, number_rounds, kd_diff, kd, rating_1_0 
+												FROM players
+												WHERE id = {0}""".format(player_id)
+
+
+
 # INSERT ---------------------------------------------------------------------------------------------------------------
 
 # ---> [TABLE telegram]
@@ -239,10 +257,10 @@ query_insert_new_user = "INSERT INTO telegram (id, language, name, joined) VALUE
 # Инсертим данные о матчах
 query_insert_matches = """INSERT INTO matches
 							(id, type, unix_datetime, stars, lan, team1_id, team2_id, meta, event_id, result_score)
-							VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+							VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
 							ON CONFLICT (id) DO UPDATE
-							SET (type, unix_datetime, team1_id, team2_id, meta, result_score)
-							= (EXCLUDED.type, EXCLUDED.unix_datetime, EXCLUDED.team1_id, EXCLUDED.team2_id, EXCLUDED.meta, EXCLUDED.result_score)
+							SET (type, unix_datetime, team1_id, team2_id, meta, event_id, result_score)
+							= (EXCLUDED.type, EXCLUDED.unix_datetime, EXCLUDED.team1_id, EXCLUDED.team2_id, EXCLUDED.meta, EXCLUDED.event_id, EXCLUDED.result_score)
 							"""
 
 # ---> [TABLE teams]
@@ -251,7 +269,7 @@ query_insert_matches = """INSERT INTO matches
 query_insert_teams = "INSERT INTO teams (id, name) VALUES (%s,%s) ON CONFLICT DO NOTHING"
 
 # 
-query_update_stats_teams = """INSERT INTO teams 
+query_insert_stats_teams = """INSERT INTO teams 
 								(id, name, flag, number_maps, kd_diff, kd, rating_1_0) 
 								VALUES (%s,%s,%s,%s,%s,%s,%s)
 								ON CONFLICT (id) DO UPDATE
@@ -261,24 +279,20 @@ query_update_stats_teams = """INSERT INTO teams
 # ---> [TABLE players]
 
 #
-query_update_stats_players = """INSERT INTO players 
-										(id, nik_name, flag, number_maps, number_rounds, kd_diff, kd, rating_1_0) 
-										VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+query_insert_stats_players = """INSERT INTO players 
+										(id, team_id, nik_name, flag, number_maps, number_rounds, kd_diff, kd, rating_1_0) 
+										VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
 										ON CONFLICT (id) DO UPDATE
 										SET (flag, number_maps, number_rounds, kd_diff, kd, rating_1_0)
 										= (EXCLUDED.flag, EXCLUDED.number_maps, EXCLUDED.number_rounds, EXCLUDED.kd_diff, EXCLUDED.kd, EXCLUDED.rating)"""
 
-# 
-query_select_player_info = lambda player_id: """SELECT id, nik_name, name, flag, number_maps, number_rounds, kd_diff, kd, rating_1_0 
-												FROM players
-												WHERE id = {0}""".format(player_id)
 
 # ---> [TABLE events]
 
 # Инсертим данные о событиях
 query_insert_events = """INSERT INTO events
 						(id, type, name, location, flag, start_date, stop_date, prize, count_teams)
-						VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
+						VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) 
 						ON CONFLICT (id) DO UPDATE
 						SET (location, flag, start_date, stop_date, prize, count_teams)
 						= (EXCLUDED.location, EXCLUDED.flag, EXCLUDED.start_date, EXCLUDED.stop_date, EXCLUDED.prize, EXCLUDED.count_teams)
@@ -355,10 +369,10 @@ class SELECT:
 		cursor.execute(query_select_notice(user_id, id_, f"notice_{colomn_name}"))
 		
 
-		#print(cursor.fetchone()[-1])
+		#print(cursor.fetchone())
 		
 
-		return cursor.fetchone()[-1]
+		return not cursor.fetchone() is None
 
 	def all_notice(self, user_id: int):
 		cursor.execute(query_select_all_notice(user_id))
@@ -369,11 +383,15 @@ class SELECT:
 		return cursor.fetchone()[-1]
 
 	# УЗНАТЬ, КАК МОЖНО ОПТИМИЗИРОВАТЬ ЭТОТ ЗАПРОС
-	def team_id_by_name(self, team_name: str, one_result = False):
-		cursor.execute(query_select_team_id_by_name(team_name))
+	def teams_by_name(self, team_name: str, one_result = False):
+		cursor.execute(query_select_teams_by_name(team_name))
 		if one_result:
 			return cursor.fetchone()
 		return cursor.fetchall()
+
+	def team_id_by_exact_name(self, team_name: str):
+		cursor.execute(query_select_team_id_by_exact_name(team_name))
+		return cursor.fetchone()
 
 	def player_id_by_name(self, player_name: str, one_result = False):
 		cursor.execute(query_select_player_id_by_name(player_name))
@@ -503,11 +521,11 @@ class INSERT:
 		connection.commit()
 
 	def stats_teams(self, stats_teams_array):
-		cursor.executemany(query_update_stats_teams, stats_teams_array)
+		cursor.executemany(query_insert_stats_teams, stats_teams_array)
 		connection.commit()
 
 	def stats_players(self, stats_players_array):
-		cursor.executemany(query_update_stats_players, stats_players_array)
+		cursor.executemany(query_insert_stats_players, stats_players_array)
 		connection.commit()
 
 
@@ -605,6 +623,7 @@ class TABLE:
 	def matches(self):
 		cursor.execute("""CREATE TABLE IF NOT EXISTS matches (
 							id integer NOT NULL PRIMARY KEY,
+							notice boolean DEFAULT True,
 							type varchar (1),
 							unix_datetime timestamp without time zone,
 							stars smallint,
@@ -678,8 +697,8 @@ def check_exists_tables():
 
 	TABLE().events()
 
-	TABLE().players()
 	TABLE().teams()
+	TABLE().players()
 	TABLE().matches()
 	
 	TABLE().news()
