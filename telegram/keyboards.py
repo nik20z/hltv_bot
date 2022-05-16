@@ -279,7 +279,16 @@ class INLINE:
 		buttons_second_string = [button_time, button_stars_meta]
 
 		if match_type == 'R':
-			result_text = f"{result_score[0]} - {result_score[-1]}"
+			res_team1 = result_score[0]
+			res_team2 = result_score[-1]
+			
+			result_text = f"{res_team1} - {res_team2}"
+
+			if res_team1 > res_team2:
+				result_text = '🟢 ' + result_text + ' 🔴'
+			else:
+				result_text = '🔴 ' + result_text + ' 🟢'
+			
 			button_result_score = BUTTON(result_text).inline(f"look_info {result_text}")
 			buttons_first_string.insert(1, button_result_score)
 
@@ -303,7 +312,7 @@ class INLINE:
 		return self.keyboard
 
 
-	def notifications(self, d: tuple, last_callback_data, add_back_button = False, add_close_button = True):
+	def notifications(self, d: tuple, last_callback_data, add_back_button = False, add_close_button = True, add_team_flag = True):
 		
 		texts = {'teams': '🌀 Teams 🌀', 
 				'matches': '🆚 Matches 🆚', 
@@ -318,7 +327,7 @@ class INLINE:
 			for x in obj:
 
 				if notice_type == 'teams':
-					self.keyboard.add(self.get_team_button(x, last_callback_data))
+					self.keyboard.add(self.get_team_button(x, last_callback_data, add_flag=add_team_flag))
 
 				elif notice_type == 'matches':
 					self.get_match_button(x, last_callback_data, add_time=True, add_live_mark=True, add=True)
@@ -343,11 +352,12 @@ class INLINE:
 		return self.keyboard
 
 
-	def get_team_button(self, obj, last_callback_data: str):
+	def get_team_button(self, obj, last_callback_data: str, add_flag = False):
 		team_id = obj[0]
 		team_name = obj[1]
+		flag = obj[2]
 
-		text_button = team_name
+		text_button = f"{team_name} {'' if not add_flag or flag is None else flag}"
 		callback_data = f"{last_callback_data} ti {team_id}"
 		
 		return BUTTON(text_button).inline(callback_data)
@@ -363,10 +373,10 @@ class INLINE:
 		
 		return BUTTON(text_button).inline(callback_data)
 
-	def teams_list(self, all_teams_obj: tuple, last_callback_data: str):
+	def teams_list(self, all_teams_obj: tuple, last_callback_data: str, add_flag = False):
 
 		for team_obj in all_teams_obj:
-			self.keyboard.add(self.get_team_button(team_obj, last_callback_data))
+			self.keyboard.add(self.get_team_button(team_obj, last_callback_data, add_flag=add_flag))
 
 		self.keyboard.add(self.get_close_button())
 
@@ -548,13 +558,15 @@ class INLINE:
 		
 		return self.keyboard
 
+	
 	def events_by_team(self, events_array: list, last_callback_data: str):
 		return self.events(None, events_array, last_callback_data, add_months=False, add_url=True)
 
+	
 	def events_by_date(self, events_array: list, last_callback_data: str):
 		return self.events(None, events_array, last_callback_data, add_back_button=False)
 
-
+	
 	def event_info(self, obj: tuple, last_callback_data: str, subscription: bool):
 		def get_date_text(date_):
 			date_convert = datetime.datetime.strftime(date_, '%b %#d')
