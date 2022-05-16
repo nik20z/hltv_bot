@@ -27,6 +27,7 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
 
 ## Bot capabilities
 
+```
 /settings - settings menu
 
 /today - today's matches
@@ -60,14 +61,14 @@ news {date} - news
 search team {team_name} - team search
 
 search player {player_name} - player search
+```
 
-
-Future updates:
+## Future updates:
 
 - [ ] Improving anti-flood system that can effectively block spammers
 
 
-Installation order:
+## Installation order:
 
 ```
 sudo apt update
