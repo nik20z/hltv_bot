@@ -1,6 +1,6 @@
 db_settings = {
-                'user': "user_name",
-                'password': "password",
+                'user': "YOUR_USER_NAME",
+                'password': "YOUR_PASSWORD",
                 'host': "localhost",
                 'port': 5432, 
                 'database': 'hltv'
@@ -35,7 +35,7 @@ Intervals = lambda func_name: {
 
 
 
-TOKEN = ""
+TOKEN = "YOUR_BOT_TOKEN"
 
 
 # webhook settings
