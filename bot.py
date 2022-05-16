@@ -67,7 +67,7 @@ logger.add(**log_settings)
 [TABLE, INSERT, UPDATE, SELECT, DELETE] = CONNECT(db_settings)
 
 # UpdateData
-UpdateData_by_timer(INSERT, SELECT, UPDATE, UpdateData)
+#UpdateData_by_timer(INSERT, SELECT, UPDATE, UpdateData)
 
 
 # Live notifications
@@ -414,6 +414,8 @@ async def notice(callback: CallbackQuery):
 
     update_result, limit_condition = UPDATE.user_notice(user_id, type_notice, id_, limit=limit)
 
+    print(update_result, limit_condition)
+
     if limit_condition:
         text = ANSWER_CALLBACK['notice_limit'](type_notice, limit)
         return await bot.answer_callback_query(callback_query_id=callback.id, text=text)
@@ -638,8 +640,8 @@ async def match_info(callback: CallbackQuery):
     text = ANSWER_TEXT['match_info']
     keyboard = INLINE().match_info(match_info_obj, last_callback_data, subscription)
 
-    await bot.answer_callback_query(callback.id)
     await callback.message.edit_text(text, reply_markup=keyboard)
+    await bot.answer_callback_query(callback.id)
     CreateLog(callback, 'match_info', params=match_id)
 
 
@@ -712,7 +714,7 @@ async def player_info(callback: Message):
 
 
 # EVENTS ------------------------------------------------------------------------------------------------------------------------------
-@dp.message_handler(Text(startswith='events', ignore_case=True))
+@dp.message_handler(lambda message: check_message_text(message, ['events']))#Text(startswith='events', ignore_case=True))
 #@rate_limit()
 async def events(message: Message, callback = None, edit_message = False):
 
@@ -1027,23 +1029,25 @@ async def notifications(message: Message, edit = False, last_callback_data = 'n'
     d = {'teams': [], 'matches': [], 'events': []}
     for i in (0,2,4):
         notice_type = all_notice_obj[i]
-        ids_array = sorted(all_notice_obj[i+1])
+        ids_array = all_notice_obj[i+1]
         
         if ids_array is None or ids_array == []:
             continue
+
+        ids_array_sorted = sorted(ids_array)
         
         if notice_type == 'teams':
-            d[notice_type] = SELECT.teams_by_ids_array(ids_array)
+            d[notice_type] = SELECT.teams_by_ids_array(ids_array_sorted)
 
         elif notice_type == 'matches':
             [user_timezone] = SELECT.user_data_by_colomn_names(user_id, ['timezone'])
-            d[notice_type] = SELECT.matches_by_ids_array(ids_array, user_timezone)
+            d[notice_type] = SELECT.matches_by_ids_array(ids_array_sorted, user_timezone)
 
         elif notice_type == 'events':
-            d[notice_type] = SELECT.events_by_ids_array(ids_array)
+            d[notice_type] = SELECT.events_by_ids_array(ids_array_sorted)
 
     text = ANSWER_TEXT['notifications']
-    keyboard = INLINE().notifications(d, last_callback_data)
+    keyboard = INLINE().notifications(d, last_callback_data, add_team_flag=True)
 
     if edit:
         return await message.edit_text(text, reply_markup=keyboard)
@@ -1084,7 +1088,7 @@ async def search(message: Message, callback = None, type_search_short = None, na
         return await message.answer(text)
 
     if type_search_short == 't':
-        all_coincidences = SELECT.team_id_by_name(name_search)
+        all_coincidences = SELECT.teams_by_name(name_search)
     elif type_search_short == 'p':
         all_coincidences = SELECT.player_id_by_name(name_search)
 
@@ -1097,12 +1101,13 @@ async def search(message: Message, callback = None, type_search_short = None, na
     text = ANSWER_TEXT['search_results'](name_search)
     
     if type_search_short == 't':
-        keyboard = INLINE().teams_list(all_coincidences, last_callback_data)
+        keyboard = INLINE().teams_list(all_coincidences, last_callback_data, add_flag=True)
     elif type_search_short == 'p':
         keyboard = INLINE().players_list(all_coincidences, last_callback_data)
 
     if edit and not callback is None:
-        return await callback.message.edit_text(text, reply_markup=keyboard)
+        await callback.message.edit_text(text, reply_markup=keyboard)
+        return await bot.answer_callback_query(callback.id)
     await message.answer(text, reply_markup=keyboard)
 
 
