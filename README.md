@@ -66,3 +66,31 @@ Future updates:
 
 - [ ] Improving anti-flood system that can effectively block spammers
 
+
+Installation order:
+
+```
+sudo apt update
+sudo apt install python3.8
+sudo apt install python3-pip
+
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo -i -u postgres
+  psql
+    CREATE USER hltv WITH PASSWORD 'your_password';
+    CREATE DATABASE hltv;
+
+pip3 install aiohttp
+pip3 install beautifulsoup4
+pip3 install pytz
+pip3 install loguru
+pip3 install timezonefinder
+pip3 install aiogram
+pip3 install psycopg2-binary
+pip3 install lxml
+```
+
+
+
+
