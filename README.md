@@ -29,37 +29,22 @@ The main advantages of a bot from a developer's point of view, in my opinion, ar
 
 ```
 /settings - settings menu
-
 /today - today's matches
-
 /tomorrow - tomorrow's matches
-
 /live - live broadcasts
-
 /results_today - today's results
-
 /events - events information
-
 /news - latest news
-
 /matches - weekly matches
-
 /results - weekly results
-
 /keyboard - show keyboard
-
 /notifications - list of notification subscriptions
 
 Date picker:
-
 mathces {date} - matches for a specific day
-
 results {date} - results
-
 news {date} - news
-
 search team {team_name} - team search
-
 search player {player_name} - player search
 ```
 
