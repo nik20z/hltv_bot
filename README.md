@@ -52,7 +52,7 @@ search player {player_name} - player search
 
 - [ ] Improving anti-flood system that can effectively block spammers
 - [ ] Start logging
-- [ ] 
+- [ ] Create functions to handle errors and solve problems caused by them
 
 ## Installation order:
 
