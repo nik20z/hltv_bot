@@ -51,7 +51,8 @@ search player {player_name} - player search
 ## Future updates:
 
 - [ ] Improving anti-flood system that can effectively block spammers
-
+- [ ] Start logging
+- [ ] 
 
 ## Installation order:
 
