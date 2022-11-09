@@ -1,0 +1,15 @@
+[Unit]
+Description=Telegram bot 'hltv bot'
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/hltv
+ExecStart=/usr/bin/python3 /home/hltv/run.py
+RestartSec=10
+Restart=always
+ 
+[Install]
+WantedBy=multi-user.target
